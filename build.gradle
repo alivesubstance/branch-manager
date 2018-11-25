@@ -1,0 +1,15 @@
+plugins {
+    id 'org.jetbrains.intellij' version '0.3.12'
+}
+
+group 'branch-manager'
+version '0.1-SNAPSHOT'
+
+intellij {
+    version '2018.3'
+}
+patchPluginXml {
+    changeNotes """
+      Add change notes here.<br>
+      <em>most HTML tags may be used</em>"""
+}

@@ -22,6 +22,7 @@ compileTestKotlin {
 }
 intellij {
     version '2018.3'
+    plugins 'git4idea'
 }
 patchPluginXml {
     changeNotes """

@@ -1,5 +1,6 @@
 package app.kt
 
+import app.kt.gui.ProjectListDialog
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.ui.DialogBuilder
@@ -13,17 +14,17 @@ class PurgeLocalBranchesAction: AnAction() {
         val activeProjects = ProjectUtil.listActiveProjects(e.project)
         println("activeProjects = $activeProjects")
 
-//        val repositoryManager = GitUtil.getRepositoryManager(e.project!!)
-//        repositoryManager.
+        val projectListDialog = ProjectListDialog(e.project)
+        projectListDialog.showAndGet()
 
-        val builder = DialogBuilder(e.project)
-        builder.setDimensionServiceKey("GrepConsoleTailFileDialog")
-        builder.setTitle("Tail File settings")
+//        val builder = DialogBuilder(e.project)
+//        builder.setDimensionServiceKey("GrepConsoleTailFileDialog")
+//        builder.setTitle("Tail File settings")
 //        builder.setCenterPanel()
-        builder.removeAllActions()
-        builder.addOkAction()
-        builder.addCancelAction()
-        builder.show()
+//        builder.removeAllActions()
+//        builder.addOkAction()
+//        builder.addCancelAction()
+//        builder.show()
     }
 
 

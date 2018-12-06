@@ -1,15 +1,11 @@
-package app.kt.gui;
+package app.gui;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import git4idea.i18n.GitBundle;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
 
 public class ProjectListDialog extends DialogWrapper {
     private JPanel mainPanel;
@@ -18,6 +14,8 @@ public class ProjectListDialog extends DialogWrapper {
     public ProjectListDialog(@Nullable Project project) {
         super(project);
         setTitle("Projects");
+
+        createUIComponents();
     }
 
     @Nullable

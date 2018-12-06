@@ -1,4 +1,4 @@
-package app.kt
+package app
 
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup

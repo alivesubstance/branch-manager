@@ -1,11 +1,8 @@
-package app.kt
+package app
 
-import app.kt.gui.ProjectListDialog
+import app.gui.ProjectListDialog
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.ui.DialogBuilder
-import git4idea.GitUtil
-import javax.swing.JComponent
 
 
 class PurgeLocalBranchesAction: AnAction() {

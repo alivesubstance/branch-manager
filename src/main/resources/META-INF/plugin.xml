@@ -17,17 +17,17 @@
     </extensions>
 
     <actions>
-        <group id="app.kt.BranchManagerGroup"
-               class="app.kt.BranchManagerGroup"
+        <group id="app.BranchManagerGroup"
+               class="app.BranchManagerGroup"
                text="Branch manager" popup="true">
             <add-to-group group-id="VcsGroups" anchor="last"/>
-            <action id="app.kt.CreateBranchAction"
-                    class="app.kt.CreateBranchAction"
+            <action id="app.CreateBranchAction"
+                    class="app.CreateBranchAction"
                     text="Create branch"
                     description="Create the same branch in selected repositories"
             />
-            <action id="app.kt.PurgeLocalBranchesAction"
-                    class="app.kt.PurgeLocalBranchesAction"
+            <action id="app.PurgeLocalBranchesAction"
+                    class="app.PurgeLocalBranchesAction"
                     text="Purge local branches"
                     description="Delete local branches missing in remote"
             />

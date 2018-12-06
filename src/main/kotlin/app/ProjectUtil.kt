@@ -2,10 +2,12 @@ package app
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
+import com.intellij.openapi.vfs.VirtualFile
 
 
 object ProjectUtil {
 
-    fun listActiveProjects(project: Project?): List<String> = ProjectRootManager.getInstance(project!!).contentRootUrls
+    fun listActiveProjects(project: Project?): Array<out VirtualFile> =
+            ProjectRootManager.getInstance(project!!).contentRoots
 
 }

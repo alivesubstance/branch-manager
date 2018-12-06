@@ -14,6 +14,7 @@ class ProjectListDialog(project: Project?) : DialogWrapper(project) {
 
     init {
         title = "Projects"
+        init()
     }
 
     override fun createCenterPanel(): JComponent? {
@@ -21,7 +22,7 @@ class ProjectListDialog(project: Project?) : DialogWrapper(project) {
     }
 
     private fun createUIComponents() {
-        val tableModel = DefaultTableModel(null, arrayOf<Any>("", "Project", "Branch"))
+        val tableModel = DefaultTableModel(null, arrayOf("", "Project", "Branch"))
 
         mainTable = JBTable(tableModel)
     }

@@ -2,6 +2,7 @@ package app.gui
 
 import app.ProjectUtil
 import com.intellij.openapi.project.Project
+import git4idea.repo.GitRepository
 import javax.swing.table.DefaultTableModel
 
 class ProjectListTableModel(private val project: Project?) : DefaultTableModel() {
@@ -19,11 +20,11 @@ class ProjectListTableModel(private val project: Project?) : DefaultTableModel()
         val rows = activeRepositories.map {
             Row(true, it.project.name, it.currentBranchName)
         }
-        rows.forEach { addRow(it.toArray()) }
 
+        rows.forEach { addRow(it.toArray()) }
     }
 
-    override fun isCellEditable(row: Int, column: Int): Boolean = column == 1
+    override fun isCellEditable(row: Int, column: Int): Boolean = column == 0
 
     override fun getColumnClass(columnIndex: Int): Class<*> = COLUMN_CLASS[columnIndex]
 }

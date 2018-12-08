@@ -3,13 +3,15 @@ package app
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.vfs.VirtualFile
+import git4idea.repo.GitRepository
+import git4idea.repo.GitRepositoryManager
 
 
 object ProjectUtil {
 
-    fun listActiveProjects(project: Project?): Array<out VirtualFile> =
+    fun listContentRoots(project: Project?): Array<out VirtualFile> =
             ProjectRootManager.getInstance(project!!).contentRoots
 
-    fun listActiveRepositories(project: Project?): List<GitRepository> =
+    fun listRepositories(project: Project?): List<GitRepository> =
         GitRepositoryManager.getInstance(project!!).repositories
 }

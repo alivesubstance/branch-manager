@@ -10,7 +10,10 @@ import javax.swing.JTable
 
 // Marking a constructor parameter as a val turns it into a property of a class
 class ProjectListDialog(private val project: Project?) : DialogWrapper(project) {
-    private val log = Logger.getInstance(ProjectListDialog::class.java)
+
+    companion object {
+        private val log = Logger.getInstance(ProjectListDialog::class.java)
+    }
 
     private lateinit var mainPanel: JPanel
     private lateinit var mainTable: JTable

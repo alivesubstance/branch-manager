@@ -10,4 +10,6 @@ object ProjectUtil {
     fun listActiveProjects(project: Project?): Array<out VirtualFile> =
             ProjectRootManager.getInstance(project!!).contentRoots
 
+    fun listActiveRepositories(project: Project?): List<GitRepository> =
+        GitRepositoryManager.getInstance(project!!).repositories
 }

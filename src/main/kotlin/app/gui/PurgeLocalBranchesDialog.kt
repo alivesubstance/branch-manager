@@ -32,13 +32,20 @@ class PurgeLocalBranchesDialog(project: Project?) : DialogWrapper(project) {
     private fun initProjectComboBox(project: Project?) {
         val repositories = ProjectUtil.listRepositories(project)
         val projectInfos = repositories.map { ProjectInfo(it) }
-        projectInfos .forEach { projectsComboBox.addItem(it) }
+        projectInfos.forEach { projectsComboBox.addItem(it) }
 
-        branchesTable.model = BranchesTableModel(projectInfos[0])
+        updateBranchesTable(projectInfos[0])
 
         projectsComboBox.addActionListener { event ->
-            log.info(event.toString())
+            val selectedProject = (event.source as JComboBox<*>).selectedItem
+            updateBranchesTable(selectedProject as ProjectInfo)
         }
+    }
+
+    private fun updateBranchesTable(projectInfo: ProjectInfo) {
+        branchesTable.model = BranchesTableModel(projectInfo)
+        branchesTable.columnModel.getColumn(0).maxWidth = 30
+        branchesTable.columnModel.getColumn(2).maxWidth = 30
     }
 
     override fun createCenterPanel(): JComponent? {

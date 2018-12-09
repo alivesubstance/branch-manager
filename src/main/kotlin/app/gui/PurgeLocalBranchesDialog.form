@@ -36,8 +36,8 @@
         <children>
           <component id="c0f9d" class="javax.swing.JTable" binding="branchesTable">
             <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
-                <preferred-size width="450" height="250"/>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="7" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                <preferred-size width="400" height="200"/>
               </grid>
             </constraints>
             <properties/>
@@ -47,7 +47,7 @@
       <component id="8cbba" class="javax.swing.JComboBox" binding="projectsComboBox">
         <constraints>
           <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false">
-            <preferred-size width="450" height="-1"/>
+            <preferred-size width="400" height="-1"/>
           </grid>
         </constraints>
         <properties/>

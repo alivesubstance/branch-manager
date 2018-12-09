@@ -4,6 +4,7 @@ import app.ProjectUtil
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
+import git4idea.GitRemoteBranch
 import git4idea.repo.GitRepository
 import javax.swing.JComboBox
 import javax.swing.JComponent
@@ -66,9 +67,14 @@ class BranchesTableModel(private val projectInfo: ProjectInfo) : DefaultTableMod
         COLUMN_NAME.forEach { addColumn(it) }
 
         val localBranches = projectInfo.gitRepo.branches.localBranches
-        val remoteBranches = projectInfo.gitRepo.branches.remoteBranches
+        val remoteBranches: MutableCollection<GitRemoteBranch> = projectInfo.gitRepo.branches.remoteBranches
+        localBranches.forEach { localBranch ->
+            val isLocalBranchExistsOnRemote = remoteBranches.any {
+                remoteBranch -> remoteBranch.nameForRemoteOperations == localBranch.name
+            }
 
-        localBranches.forEach { addRow(arrayOf(false, it.name, false)) }
+            addRow(arrayOf(!isLocalBranchExistsOnRemote, localBranch.name, isLocalBranchExistsOnRemote))
+        }
     }
 
     override fun isCellEditable(row: Int, column: Int): Boolean = column == 0

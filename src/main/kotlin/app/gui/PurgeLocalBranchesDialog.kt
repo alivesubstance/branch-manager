@@ -62,7 +62,7 @@ class PurgeLocalBranchesDialog(project: Project?) : DialogWrapper(project) {
 
         val existOnRemoteColumn = columnModel.getColumn(2)
         existOnRemoteColumn.headerValue = "Exist on remote"
-        existOnRemoteColumn.maxWidth = 150
+        existOnRemoteColumn.maxWidth = 50
     }
 
     override fun createCenterPanel(): JComponent? {
@@ -77,7 +77,7 @@ class BranchesTableModel: DefaultTableModel() {
     companion object {
         // like private static final in java
         private val COLUMN_CLASS = arrayOf(java.lang.Boolean::class.java, String::class.java, java.lang.Boolean::class.java)
-        private val COLUMN_NAME = arrayOf("Select", "Branch", "Exist on remote")
+        private val COLUMN_NAME = arrayOf("Select", "Branch", "Remote")
     }
 
     init {
@@ -109,12 +109,7 @@ class BranchesTableModel: DefaultTableModel() {
     }
 
     private fun clearTable() {
-        if (rowCount > 0) {
-            for (i in 0..rowCount) {
-                removeRow(i)
-            }
-        }
-
+        dataVector.clear()
         removeCandidates.clear()
     }
 }

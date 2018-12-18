@@ -91,9 +91,10 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
     }
 
     override fun doOKAction() {
-        val deleteLocalBranchesRes = MessageDialogBuilder.yesNo("Delete local branches", "Are you sure to delete local branches?")
-                .noText("Cancel")
-                .show()
+        val deleteLocalBranchesRes = MessageDialogBuilder.yesNo(
+                "Delete local branches",
+                "Are you sure to delete local branches?"
+        ).noText("Cancel").show()
 
         if (deleteLocalBranchesRes == Messages.YES) {
             deleteLocalBranches(projectsComboBox.selectedItem as GitRepoInfo)
@@ -111,60 +112,61 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
         }
     }
 
-}
+    class BranchesTableModel : DefaultTableModel() {
 
-class BranchesTableModel: DefaultTableModel() {
+        companion object {
+            // like private static final in java
+            private val COLUMN_CLASS = arrayOf(java.lang.Boolean::class.java, String::class.java, java.lang.Boolean::class.java)
+            private val COLUMN_NAME = arrayOf("Select", "Branch", "Remote")
+        }
 
-    companion object {
-        // like private static final in java
-        private val COLUMN_CLASS = arrayOf(java.lang.Boolean::class.java, String::class.java, java.lang.Boolean::class.java)
-        private val COLUMN_NAME = arrayOf("Select", "Branch", "Remote")
-    }
+        init {
+            COLUMN_NAME.forEach { addColumn(it) }
+        }
 
-    init {
-        COLUMN_NAME.forEach { addColumn(it) }
-    }
+        override fun isCellEditable(row: Int, column: Int): Boolean = column == 0
 
-    override fun isCellEditable(row: Int, column: Int): Boolean = column == 0
+        override fun getColumnClass(columnIndex: Int): Class<*> = COLUMN_CLASS[columnIndex]
 
-    override fun getColumnClass(columnIndex: Int): Class<*> = COLUMN_CLASS[columnIndex]
+        override fun getColumnCount(): Int = 3
 
-    override fun getColumnCount(): Int  = 3
+        fun updateBranches(gitRepoInfo: GitRepoInfo) {
+            clearData(gitRepoInfo)
 
-    fun updateBranches(gitRepoInfo: GitRepoInfo) {
-        clearData(gitRepoInfo)
+            gitRepoInfo.localBranches.forEach { localBranch ->
+                val isLocalBranchExistsOnRemote = gitRepoInfo.remoteBranches.any { remoteBranch ->
+                    remoteBranch.nameForRemoteOperations == localBranch.name
+                }
 
-        gitRepoInfo.localBranches.forEach { localBranch ->
-            val isLocalBranchExistsOnRemote = gitRepoInfo.remoteBranches.any {
-                remoteBranch -> remoteBranch.nameForRemoteOperations == localBranch.name
+                if (!isLocalBranchExistsOnRemote) {
+                    gitRepoInfo.removeCandidates.add(localBranch)
+                }
+
+                addRow(arrayOf(!isLocalBranchExistsOnRemote, localBranch.name, isLocalBranchExistsOnRemote))
             }
+        }
 
-            if (!isLocalBranchExistsOnRemote) {
-                gitRepoInfo.removeCandidates.add(localBranch)
-            }
-
-            addRow(arrayOf(!isLocalBranchExistsOnRemote, localBranch.name, isLocalBranchExistsOnRemote))
+        private fun clearData(gitRepoInfo: GitRepoInfo) {
+            dataVector.clear()
+            gitRepoInfo.removeCandidates.clear()
         }
     }
 
-    private fun clearData(gitRepoInfo: GitRepoInfo) {
-        dataVector.clear()
-        gitRepoInfo.removeCandidates.clear()
-    }
-}
+    data class GitRepoInfo(val gitRepo: GitRepository) {
 
-data class GitRepoInfo(val gitRepo: GitRepository) {
+        var removeCandidates = mutableListOf<GitLocalBranch>()
 
-    var removeCandidates = mutableListOf<GitLocalBranch>()
+        val localBranches: List<GitLocalBranch>
+            get() = gitRepo.branches.localBranches.toList()
 
-    val localBranches: List<GitLocalBranch>
-        get() = gitRepo.branches.localBranches.toList()
+        val remoteBranches: List<GitRemoteBranch>
+            get() = gitRepo.branches.remoteBranches.toList()
 
-    val remoteBranches: List<GitRemoteBranch>
-        get() = gitRepo.branches.remoteBranches.toList()
+        override fun toString(): String {
+            return gitRepo.root.name
+        }
 
-    override fun toString(): String {
-        return gitRepo.root.name
     }
 
 }
+

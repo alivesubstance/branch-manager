@@ -70,7 +70,7 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
 
         if (checkoutBranchRes == Messages.YES) {
             checkoutBranch(branchToCheckout)
-             // close parent dialog
+            // close parent dialog
             super.doOKAction()
         }
     }
@@ -109,9 +109,9 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
         init {
             COLUMN_NAME.forEach { addColumn(it) }
 
-            reposMap.keys.forEach {
-                addRow(arrayOf(false, it))
-            }
+            reposMap.keys
+                    .sorted()
+                    .forEach { addRow(arrayOf(false, it)) }
         }
 
         override fun isCellEditable(row: Int, column: Int): Boolean = column == 0

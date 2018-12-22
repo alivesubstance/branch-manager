@@ -12,10 +12,13 @@ import git4idea.GitRemoteBranch
 import git4idea.GitUsagesTriggerCollector.Companion.reportUsage
 import git4idea.branch.GitBrancher
 import git4idea.repo.GitRepository
+import java.awt.Component
+import java.awt.Font
 import javax.swing.JComboBox
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTable
+import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.table.DefaultTableModel
 
 class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(project) {
@@ -24,20 +27,20 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
         private val log = Logger.getInstance(PurgeLocalBranchesDialog::class.java)
     }
 
-    private var repositories: List<GitRepository>
+    private var repositories: List<GitRepoInfo>
 
     private lateinit var mainPanel: JPanel
     private lateinit var branchesTable: JTable
     private lateinit var projectsComboBox: JComboBox<GitRepoInfo>
 
     private val branchesTableModel = BranchesTableModel()
+    private val tableCellRenderer = MyDefaultTableCellRenderer()
 
     init {
         title = "Purge local branches"
         setOKButtonText("Purge")
 
-        repositories = ProjectUtil.listRepositories(project)
-
+        repositories = ProjectUtil.listRepositories(project).map { GitRepoInfo(it) }
         init()
     }
 
@@ -48,15 +51,20 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
     }
 
     private fun initProjectComboBox() {
-        val projectInfos = repositories.map { GitRepoInfo(it) }
-        projectInfos.forEach { projectsComboBox.addItem(it) }
+        repositories.forEach { projectsComboBox.addItem(it) }
 
-        branchesTableModel.updateBranches(projectInfos[0])
+        updateBranches(repositories[0])
 
         projectsComboBox.addActionListener { event ->
             val selectedProject = (event.source as JComboBox<*>).selectedItem
-            branchesTableModel.updateBranches(selectedProject as GitRepoInfo)
+            val repoInfo = selectedProject as GitRepoInfo
+            updateBranches(repoInfo)
         }
+    }
+
+    private fun updateBranches(gitRepoInfo: GitRepoInfo) {
+        branchesTableModel.updateBranches(gitRepoInfo)
+        tableCellRenderer.currentRepo = gitRepoInfo
     }
 
     private fun initBranchesTable() {
@@ -74,6 +82,8 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
         val existOnRemoteColumn = columnModel.getColumn(2)
         existOnRemoteColumn.headerValue = "Remote"
         existOnRemoteColumn.maxWidth = 50
+
+        branchesTable.setDefaultRenderer(String::class.java, tableCellRenderer)
 
         branchesTableModel.addTableModelListener { event ->
             if (event.firstRow != -1 && event.column != -1) {
@@ -109,6 +119,20 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
         gitRepoInfo.removeCandidates.forEach {
             gitBrancher.deleteBranch(it.name, mutableListOf(gitRepoInfo.gitRepo))
             reportUsage(project, "git.branch.delete.local")
+        }
+    }
+
+    class MyDefaultTableCellRenderer: DefaultTableCellRenderer() {
+        lateinit var currentRepo: GitRepoInfo
+
+        override fun getTableCellRendererComponent(
+                table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int
+        ): Component {
+            val component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column)
+            if (column == 1 && currentRepo.gitRepo.currentBranch?.name == value) {
+                component.font = component.font.deriveFont(Font.BOLD)
+            }
+            return component
         }
     }
 

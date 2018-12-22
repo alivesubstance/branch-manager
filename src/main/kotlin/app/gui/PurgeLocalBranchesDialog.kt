@@ -134,15 +134,16 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
             clearData(gitRepoInfo)
 
             gitRepoInfo.localBranches.forEach { localBranch ->
+                val isCurrentLocalBranch = gitRepoInfo.gitRepo.currentBranch === localBranch
                 val isLocalBranchExistsOnRemote = gitRepoInfo.remoteBranches.any { remoteBranch ->
-                    remoteBranch.nameForRemoteOperations == localBranch.name
-                }
+                            remoteBranch.nameForRemoteOperations == localBranch.name
+                        }
 
-                if (!isLocalBranchExistsOnRemote) {
+                if (!isCurrentLocalBranch && !isLocalBranchExistsOnRemote) {
                     gitRepoInfo.removeCandidates.add(localBranch)
                 }
 
-                addRow(arrayOf(!isLocalBranchExistsOnRemote, localBranch.name, isLocalBranchExistsOnRemote))
+                addRow(arrayOf(!isCurrentLocalBranch && !isLocalBranchExistsOnRemote, localBranch.name, isLocalBranchExistsOnRemote))
             }
         }
 

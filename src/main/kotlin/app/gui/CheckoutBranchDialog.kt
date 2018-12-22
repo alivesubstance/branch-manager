@@ -7,6 +7,7 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.MessageDialogBuilder
 import com.intellij.openapi.ui.Messages
 import com.intellij.util.ui.JBUI
+import git4idea.GitUsagesTriggerCollector
 import git4idea.branch.GitBrancher
 import git4idea.repo.GitRepository
 import javax.swing.JComponent
@@ -53,20 +54,7 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
         selectColumn.maxWidth = 50
 
         val branchColumn = columnModel.getColumn(1)
-        branchColumn.headerValue = "Project"
-
-        tableModel.addTableModelListener { event ->
-            if (event.firstRow != -1 && event.column != -1) {
-                val isProjectSelected = tableModel.getValueAt(event.firstRow, event.column) as Boolean
-                val projectName = tableModel.getValueAt(event.firstRow, 1) as String
-                if (isProjectSelected) {
-                    //TODO read about let
-                    reposMap[projectName]?.let { selectedProjects.add(it) }
-                } else {
-                    reposMap.remove(projectName)
-                }
-            }
-        }
+        branchColumn.headerValue = "Repository"
     }
 
     override fun createCenterPanel(): JComponent? {
@@ -88,8 +76,27 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
     }
 
     private fun checkoutBranch(branchToCheckout: String) {
+        GitUsagesTriggerCollector.reportUsage(project, "git.branch.create.new")
         val gitBrancher = GitBrancher.getInstance(project)
-//        gitBrancher.createBranch(branchToCheckout, )
+        gitBrancher.checkoutNewBranch(
+                branchToCheckout,
+                getSelectRepositories()
+        )
+    }
+
+    private fun getSelectRepositories(): MutableList<GitRepository> {
+        val selectRepos = mutableListOf<GitRepository>()
+
+        val tableModel = reposTable.model
+        for (r in 0 until tableModel.rowCount) {
+            val isRepoSelected = tableModel.getValueAt(r, 0) as Boolean
+            if (isRepoSelected) {
+                val repoName = tableModel.getValueAt(r, 1) as String
+                selectRepos.add(reposMap[repoName]!!)
+            }
+        }
+
+        return selectRepos
     }
 
     class ProjectListTableModel(private val reposMap: Map<String, GitRepository>) : DefaultTableModel() {

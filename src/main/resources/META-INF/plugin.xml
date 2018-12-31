@@ -23,7 +23,7 @@
             <action id="app.CreateBranchAction"
                     class="app.CreateBranchAction"
                     text="Create branch"
-                    description="Create the same branch in selected repositories"
+                    description="Create same branch in selected repositories"
             />
             <action id="app.PurgeLocalBranchesAction"
                     class="app.PurgeLocalBranchesAction"

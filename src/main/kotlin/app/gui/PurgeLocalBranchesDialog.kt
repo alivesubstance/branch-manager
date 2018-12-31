@@ -9,45 +9,62 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.util.ui.JBUI
 import git4idea.GitLocalBranch
 import git4idea.GitRemoteBranch
+import git4idea.GitUsagesTriggerCollector.Companion.reportUsage
+import git4idea.branch.GitBrancher
 import git4idea.repo.GitRepository
+import java.awt.Component
+import java.awt.Font
 import javax.swing.JComboBox
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTable
+import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.table.DefaultTableModel
 
-class PurgeLocalBranchesDialog(project: Project?) : DialogWrapper(project) {
+class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(project) {
 
     companion object {
         private val log = Logger.getInstance(PurgeLocalBranchesDialog::class.java)
     }
 
+    private var repositories: List<GitRepoInfo>
+
     private lateinit var mainPanel: JPanel
     private lateinit var branchesTable: JTable
-    private lateinit var projectsComboBox: JComboBox<ProjectInfo>
+    private lateinit var projectsComboBox: JComboBox<GitRepoInfo>
 
     private val branchesTableModel = BranchesTableModel()
+    private val tableCellRenderer = MyDefaultTableCellRenderer()
 
     init {
         title = "Purge local branches"
         setOKButtonText("Purge")
 
-        initBranchesTable()
-        initProjectComboBox(project)
+        repositories = ProjectUtil.listRepositories(project).map { GitRepoInfo(it) }
         init()
     }
 
-    private fun initProjectComboBox(project: Project?) {
-        val repositories = ProjectUtil.listRepositories(project)
-        val projectInfos = repositories.map { ProjectInfo(it) }
-        projectInfos.forEach { projectsComboBox.addItem(it) }
+    override fun init() {
+        initProjectComboBox()
+        initBranchesTable()
+        super.init()
+    }
 
-        branchesTableModel.updateBranches(projectInfos[0])
+    private fun initProjectComboBox() {
+        repositories.forEach { projectsComboBox.addItem(it) }
+
+        updateBranches(repositories[0])
 
         projectsComboBox.addActionListener { event ->
             val selectedProject = (event.source as JComboBox<*>).selectedItem
-            branchesTableModel.updateBranches(selectedProject as ProjectInfo)
+            val repoInfo = selectedProject as GitRepoInfo
+            updateBranches(repoInfo)
         }
+    }
+
+    private fun updateBranches(gitRepoInfo: GitRepoInfo) {
+        branchesTableModel.updateBranches(gitRepoInfo)
+        tableCellRenderer.currentRepo = gitRepoInfo
     }
 
     private fun initBranchesTable() {
@@ -65,6 +82,18 @@ class PurgeLocalBranchesDialog(project: Project?) : DialogWrapper(project) {
         val existOnRemoteColumn = columnModel.getColumn(2)
         existOnRemoteColumn.headerValue = "Remote"
         existOnRemoteColumn.maxWidth = 50
+
+        branchesTable.setDefaultRenderer(String::class.java, tableCellRenderer)
+
+        branchesTableModel.addTableModelListener { event ->
+            if (event.firstRow != -1 && event.column != -1) {
+                val gitRepoInfo = projectsComboBox.selectedItem as GitRepoInfo
+                val isBranchSelected: Boolean = branchesTableModel.getValueAt(event.firstRow, event.column) as Boolean
+                if (isBranchSelected) {
+                    gitRepoInfo.removeCandidates.add(gitRepoInfo.localBranches[event.firstRow])
+                }
+            }
+        }
     }
 
     override fun createCenterPanel(): JComponent? {
@@ -72,68 +101,99 @@ class PurgeLocalBranchesDialog(project: Project?) : DialogWrapper(project) {
     }
 
     override fun doOKAction() {
-        val deleteLocalBranchesRes = MessageDialogBuilder.yesNo("Delete local branches", "Are you sure to delete local branches?")
-                .noText("Cancel")
-                .show()
+        val deleteLocalBranchesRes = MessageDialogBuilder.yesNo(
+                "Delete local branches",
+                "Are you sure to delete local branches?"
+        ).noText("Cancel").show()
 
         if (deleteLocalBranchesRes == Messages.YES) {
-            deleteLocalBranches(branchesTableModel.removeCandidates)
+            deleteLocalBranches(projectsComboBox.selectedItem as GitRepoInfo)
             // close parent dialog
             super.doOKAction()
         }
     }
 
-    private fun deleteLocalBranches(removeCandidates: MutableList<GitLocalBranch>) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-}
+    private fun deleteLocalBranches(gitRepoInfo: GitRepoInfo) {
+        val gitBrancher = GitBrancher.getInstance(project)
 
-class BranchesTableModel: DefaultTableModel() {
-
-    var removeCandidates = mutableListOf<GitLocalBranch>()
-
-    companion object {
-        // like private static final in java
-        private val COLUMN_CLASS = arrayOf(java.lang.Boolean::class.java, String::class.java, java.lang.Boolean::class.java)
-        private val COLUMN_NAME = arrayOf("Select", "Branch", "Remote")
-    }
-
-    init {
-        COLUMN_NAME.forEach { addColumn(it) }
-    }
-
-    override fun isCellEditable(row: Int, column: Int): Boolean = column == 0
-
-    override fun getColumnClass(columnIndex: Int): Class<*> = COLUMN_CLASS[columnIndex]
-
-    override fun getColumnCount(): Int  = 3
-
-    fun updateBranches(projectInfo: ProjectInfo) {
-        clearData()
-
-        val localBranches: MutableCollection<GitLocalBranch> = projectInfo.gitRepo.branches.localBranches
-        val remoteBranches: MutableCollection<GitRemoteBranch> = projectInfo.gitRepo.branches.remoteBranches
-        localBranches.forEach { localBranch ->
-            val isLocalBranchExistsOnRemote = remoteBranches.any {
-                remoteBranch -> remoteBranch.nameForRemoteOperations == localBranch.name
-            }
-
-            if (!isLocalBranchExistsOnRemote) {
-                removeCandidates.add(localBranch)
-            }
-
-            addRow(arrayOf(!isLocalBranchExistsOnRemote, localBranch.name, isLocalBranchExistsOnRemote))
+        gitRepoInfo.removeCandidates.forEach {
+            gitBrancher.deleteBranch(it.name, mutableListOf(gitRepoInfo.gitRepo))
+            reportUsage(project, "git.branch.delete.local")
         }
     }
 
-    private fun clearData() {
-        dataVector.clear()
-        removeCandidates.clear()
+    class MyDefaultTableCellRenderer: DefaultTableCellRenderer() {
+        lateinit var currentRepo: GitRepoInfo
+
+        override fun getTableCellRendererComponent(
+                table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int
+        ): Component {
+            val component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column)
+            if (column == 1 && currentRepo.gitRepo.currentBranch?.name == value) {
+                component.font = component.font.deriveFont(Font.BOLD)
+            }
+            return component
+        }
     }
+
+    class BranchesTableModel : DefaultTableModel() {
+
+        companion object {
+            // like private static final in java
+            private val COLUMN_CLASS = arrayOf(java.lang.Boolean::class.java, String::class.java, java.lang.Boolean::class.java)
+            private val COLUMN_NAME = arrayOf("Select", "Branch", "Remote")
+        }
+
+        init {
+            COLUMN_NAME.forEach { addColumn(it) }
+        }
+
+        override fun isCellEditable(row: Int, column: Int): Boolean = column == 0
+
+        override fun getColumnClass(columnIndex: Int): Class<*> = COLUMN_CLASS[columnIndex]
+
+        override fun getColumnCount(): Int = 3
+
+        fun updateBranches(gitRepoInfo: GitRepoInfo) {
+            clearData(gitRepoInfo)
+
+            gitRepoInfo.localBranches
+                    .sortedBy { localBranch -> localBranch.name }
+                    .forEach { localBranch ->
+                        val isCurrentLocalBranch = gitRepoInfo.gitRepo.currentBranch === localBranch
+                        val isLocalBranchExistsOnRemote = gitRepoInfo.remoteBranches.any { remoteBranch ->
+                            remoteBranch.nameForRemoteOperations == localBranch.name
+                        }
+
+                if (!isCurrentLocalBranch && !isLocalBranchExistsOnRemote) {
+                    gitRepoInfo.removeCandidates.add(localBranch)
+                }
+
+                addRow(arrayOf(!isCurrentLocalBranch && !isLocalBranchExistsOnRemote, localBranch.name, isLocalBranchExistsOnRemote))
+            }
+        }
+
+        private fun clearData(gitRepoInfo: GitRepoInfo) {
+            dataVector.clear()
+            gitRepoInfo.removeCandidates.clear()
+        }
+    }
+
+    data class GitRepoInfo(val gitRepo: GitRepository) {
+
+        var removeCandidates = mutableListOf<GitLocalBranch>()
+
+        val localBranches: List<GitLocalBranch>
+            get() = gitRepo.branches.localBranches.toList()
+
+        val remoteBranches: List<GitRemoteBranch>
+            get() = gitRepo.branches.remoteBranches.toList()
+
+        override fun toString(): String {
+            return gitRepo.root.name
+        }
+
+    }
+
 }
 
-data class ProjectInfo(val gitRepo: GitRepository) {
-    override fun toString(): String {
-        return gitRepo.root.name
-    }
-}

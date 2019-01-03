@@ -12,14 +12,17 @@ import git4idea.GitRemoteBranch
 import git4idea.GitUsagesTriggerCollector.Companion.reportUsage
 import git4idea.branch.GitBrancher
 import git4idea.repo.GitRepository
+import one.util.streamex.IntStreamEx
 import java.awt.Component
 import java.awt.Font
+import java.util.stream.IntStream
 import javax.swing.JComboBox
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTable
 import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.table.DefaultTableModel
+import kotlin.streams.asSequence
 
 class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(project) {
 
@@ -85,15 +88,6 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
 
         branchesTable.setDefaultRenderer(String::class.java, tableCellRenderer)
 
-        branchesTableModel.addTableModelListener { event ->
-            if (event.firstRow != -1 && event.column != -1) {
-                val gitRepoInfo = projectsComboBox.selectedItem as GitRepoInfo
-                val isBranchSelected: Boolean = branchesTableModel.getValueAt(event.firstRow, event.column) as Boolean
-                if (isBranchSelected) {
-                    gitRepoInfo.removeCandidates.add(gitRepoInfo.localBranches[event.firstRow])
-                }
-            }
-        }
     }
 
     override fun createCenterPanel(): JComponent? {
@@ -116,8 +110,8 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
     private fun deleteLocalBranches(gitRepoInfo: GitRepoInfo) {
         val gitBrancher = GitBrancher.getInstance(project)
 
-        gitRepoInfo.removeCandidates.forEach {
-            gitBrancher.deleteBranch(it.name, mutableListOf(gitRepoInfo.gitRepo))
+        branchesTableModel.getSelectedBranches().forEach {
+            gitBrancher.deleteBranch(it, mutableListOf(gitRepoInfo.gitRepo))
             reportUsage(project, "git.branch.delete.local")
         }
     }
@@ -155,7 +149,7 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
         override fun getColumnCount(): Int = 3
 
         fun updateBranches(gitRepoInfo: GitRepoInfo) {
-            clearData(gitRepoInfo)
+            dataVector.clear()
 
             gitRepoInfo.localBranches
                     .sortedBy { localBranch -> localBranch.name }
@@ -165,23 +159,19 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
                             remoteBranch.nameForRemoteOperations == localBranch.name
                         }
 
-                if (!isCurrentLocalBranch && !isLocalBranchExistsOnRemote) {
-                    gitRepoInfo.removeCandidates.add(localBranch)
-                }
-
                 addRow(arrayOf(!isCurrentLocalBranch && !isLocalBranchExistsOnRemote, localBranch.name, isLocalBranchExistsOnRemote))
             }
         }
 
-        private fun clearData(gitRepoInfo: GitRepoInfo) {
-            dataVector.clear()
-            gitRepoInfo.removeCandidates.clear()
+        fun getSelectedBranches(): Sequence<String> {
+            return IntStream.range(0, rowCount)
+                    .asSequence()
+                    .filter { getValueAt(it, 0) as Boolean }
+                    .map { getValueAt(it, 1) as String }
         }
     }
 
     data class GitRepoInfo(val gitRepo: GitRepository) {
-
-        var removeCandidates = mutableListOf<GitLocalBranch>()
 
         val localBranches: List<GitLocalBranch>
             get() = gitRepo.branches.localBranches.toList()

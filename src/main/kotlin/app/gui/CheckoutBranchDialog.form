@@ -46,7 +46,9 @@
             <children>
               <component id="5ad3b" class="javax.swing.JTable" binding="reposTable">
                 <constraints/>
-                <properties/>
+                <properties>
+                  <preferredScrollableViewportSize width="550" height="400"/>
+                </properties>
               </component>
             </children>
           </scrollpane>

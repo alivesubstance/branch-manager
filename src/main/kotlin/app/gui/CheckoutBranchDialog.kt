@@ -85,8 +85,13 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
         selectColumn.headerValue = "Select"
         selectColumn.maxWidth = 50
 
-        val branchColumn = columnModel.getColumn(1)
-        branchColumn.headerValue = "Repository"
+        val repoColumn = columnModel.getColumn(1)
+        repoColumn.headerValue = "Repository"
+        repoColumn.maxWidth = 200
+
+        val branchColumn = columnModel.getColumn(2)
+        branchColumn.headerValue = "Branch"
+        branchColumn.maxWidth = 300
     }
 
     override fun createCenterPanel(): JComponent? {
@@ -110,17 +115,19 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
     private fun checkoutBranch(branchToCheckout: String) {
         GitUsagesTriggerCollector.reportUsage(project, "git.branch.create.new")
         val gitBrancher = GitBrancher.getInstance(project)
-        gitBrancher.checkoutNewBranch(
+        gitBrancher.checkout(
                 branchToCheckout,
-                projectListTableModel.getSelectRepositories()
+                false,
+                projectListTableModel.getSelectRepositories(),
+                null
         )
     }
 
     class ProjectListTableModel(private val reposMap: Map<String, GitRepository>) : DefaultTableModel() {
 
         companion object {
-            private val COLUMN_CLASS = arrayOf(java.lang.Boolean::class.java, String::class.java)
-            private val COLUMN_NAME = arrayOf("Select", "Project")
+            private val COLUMN_CLASS = arrayOf(java.lang.Boolean::class.java, String::class.java, String::class.java)
+            private val COLUMN_NAME = arrayOf("Select", "Repository", "Branch")
         }
 
         init {
@@ -128,14 +135,14 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
 
             reposMap.keys
                     .sorted()
-                    .forEach { addRow(arrayOf(false, it)) }
+                    .forEach { addRow(arrayOf(false, it, reposMap[it]?.currentBranchName)) }
         }
 
         override fun isCellEditable(row: Int, column: Int): Boolean = column == 0
 
         override fun getColumnClass(columnIndex: Int): Class<*> = COLUMN_CLASS[columnIndex]
 
-        override fun getColumnCount(): Int = 2
+        override fun getColumnCount(): Int = 3
 
         fun getSelectRepositories(): MutableList<GitRepository> {
             val selectRepos = mutableListOf<GitRepository>()

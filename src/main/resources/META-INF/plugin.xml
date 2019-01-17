@@ -22,7 +22,7 @@
             <add-to-group group-id="VcsGroups" anchor="last"/>
             <action id="app.CreateBranchAction"
                     class="app.CreateBranchAction"
-                    text="Create branch"
+                    text="Checkout branch"
                     description="Create same branch in selected repositories"
             />
             <action id="app.PurgeLocalBranchesAction"

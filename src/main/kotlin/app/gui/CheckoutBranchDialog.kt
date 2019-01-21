@@ -116,9 +116,9 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
         for (selectedRepo in projectListTableModel.getSelectedRepos()) {
             val isNewBranch = selectedRepo.branches.findLocalBranch(branchToCheckout) == null
             if (isNewBranch) {
-                gitBrancher.checkout(branchToCheckout, false, listOf(selectedRepo), null)
-            } else {
                 gitBrancher.checkoutNewBranch(branchToCheckout, listOf(selectedRepo))
+            } else {
+                gitBrancher.checkout(branchToCheckout, false, listOf(selectedRepo), null)
             }
         }
     }

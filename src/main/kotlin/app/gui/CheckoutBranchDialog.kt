@@ -9,7 +9,6 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.ui.PopupMenuListenerAdapter
 import com.intellij.util.ui.JBUI
 import git4idea.GitLocalBranch
-import git4idea.GitUsagesTriggerCollector
 import git4idea.branch.GitBrancher
 import git4idea.repo.GitRepository
 import javax.swing.JComboBox
@@ -59,7 +58,7 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
     }
 
     private fun findCommonBranchesInRepos(): Set<GitLocalBranch> {
-        val selectedRepos: Map<GitRepository, MutableCollection<GitLocalBranch>> = projectListTableModel.getSelectRepositories()
+        val selectedRepos: Map<GitRepository, MutableCollection<GitLocalBranch>> = projectListTableModel.getSelectedRepos()
                 .map { it to it.branches.localBranches }
                 .toMap()
 
@@ -87,11 +86,11 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
 
         val repoColumn = columnModel.getColumn(1)
         repoColumn.headerValue = "Repository"
-        repoColumn.maxWidth = 200
+        repoColumn.maxWidth = 250
 
         val branchColumn = columnModel.getColumn(2)
         branchColumn.headerValue = "Branch"
-        branchColumn.maxWidth = 300
+        branchColumn.maxWidth = 350
     }
 
     override fun createCenterPanel(): JComponent? {
@@ -113,14 +112,15 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
     }
 
     private fun checkoutBranch(branchToCheckout: String) {
-        GitUsagesTriggerCollector.reportUsage(project, "git.branch.create.new")
         val gitBrancher = GitBrancher.getInstance(project)
-        gitBrancher.checkout(
-                branchToCheckout,
-                false,
-                projectListTableModel.getSelectRepositories(),
-                null
-        )
+        for (selectedRepo in projectListTableModel.getSelectedRepos()) {
+            val isNewBranch = selectedRepo.branches.findLocalBranch(branchToCheckout) == null
+            if (isNewBranch) {
+                gitBrancher.checkout(branchToCheckout, false, listOf(selectedRepo), null)
+            } else {
+                gitBrancher.checkoutNewBranch(branchToCheckout, listOf(selectedRepo))
+            }
+        }
     }
 
     class ProjectListTableModel(private val reposMap: Map<String, GitRepository>) : DefaultTableModel() {
@@ -144,7 +144,7 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
 
         override fun getColumnCount(): Int = 3
 
-        fun getSelectRepositories(): MutableList<GitRepository> {
+        fun getSelectedRepos(): MutableList<GitRepository> {
             val selectRepos = mutableListOf<GitRepository>()
 
             for (r in 0 until rowCount) {

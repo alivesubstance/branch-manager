@@ -12,7 +12,6 @@ import git4idea.GitRemoteBranch
 import git4idea.GitUsagesTriggerCollector.Companion.reportUsage
 import git4idea.branch.GitBrancher
 import git4idea.repo.GitRepository
-import one.util.streamex.IntStreamEx
 import java.awt.Component
 import java.awt.Font
 import java.util.stream.IntStream
@@ -43,7 +42,9 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
         title = "Purge local branches"
         setOKButtonText("Purge")
 
-        repositories = ProjectUtil.listRepositories(project).map { GitRepoInfo(it) }
+        repositories = ProjectUtil.listRepositories(project)
+                .map { GitRepoInfo(it) }
+                .sortedBy { it.gitRepo.root.name }
         init()
     }
 
@@ -82,12 +83,7 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
         val branchColumn = columnModel.getColumn(1)
         branchColumn.headerValue = "Branch"
 
-        val existOnRemoteColumn = columnModel.getColumn(2)
-        existOnRemoteColumn.headerValue = "Remote"
-        existOnRemoteColumn.maxWidth = 50
-
         branchesTable.setDefaultRenderer(String::class.java, tableCellRenderer)
-
     }
 
     override fun createCenterPanel(): JComponent? {
@@ -134,8 +130,8 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
 
         companion object {
             // like private static final in java
-            private val COLUMN_CLASS = arrayOf(java.lang.Boolean::class.java, String::class.java, java.lang.Boolean::class.java)
-            private val COLUMN_NAME = arrayOf("Select", "Branch", "Remote")
+            private val COLUMN_CLASS = arrayOf(java.lang.Boolean::class.java, String::class.java)
+            private val COLUMN_NAME = arrayOf("Select", "Branch")
         }
 
         init {
@@ -146,21 +142,23 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
 
         override fun getColumnClass(columnIndex: Int): Class<*> = COLUMN_CLASS[columnIndex]
 
-        override fun getColumnCount(): Int = 3
+        override fun getColumnCount(): Int = 2
 
         fun updateBranches(gitRepoInfo: GitRepoInfo) {
             dataVector.clear()
 
             gitRepoInfo.localBranches
                     .sortedBy { localBranch -> localBranch.name }
-                    .forEach { localBranch ->
-                        val isCurrentLocalBranch = gitRepoInfo.gitRepo.currentBranch === localBranch
-                        val isLocalBranchExistsOnRemote = gitRepoInfo.remoteBranches.any { remoteBranch ->
-                            remoteBranch.nameForRemoteOperations == localBranch.name
+                    .filter {
+                        !gitRepoInfo.remoteBranches.any { remoteBranch ->
+                            remoteBranch.nameForRemoteOperations == it.name
                         }
-
-                addRow(arrayOf(!isCurrentLocalBranch && !isLocalBranchExistsOnRemote, localBranch.name, isLocalBranchExistsOnRemote))
-            }
+                    }
+                    .filter {
+                        !gitRepoInfo.gitRepo.currentBranch?.equals(it)!!
+                    }
+                    .forEach { addRow(arrayOf(true, it.name))
+                    }
         }
 
         fun getSelectedBranches(): Sequence<String> {

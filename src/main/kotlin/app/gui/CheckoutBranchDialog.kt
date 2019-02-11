@@ -28,10 +28,7 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
     private lateinit var reposTable: JTable
     private lateinit var branchComboBox: JComboBox<String>
 
-    private val reposMap: Map<String, GitRepository> =
-            ProjectUtil.listRepositories(project).map { it.root.name to it }.toMap()
-
-    private val projectListTableModel: ProjectListTableModel = ProjectListTableModel(reposMap)
+    private val projectListTableModel: ProjectListTableModel = ProjectListTableModel(project)
 
     init {
         log.info("Project list dialog initialized for project $project")
@@ -44,6 +41,12 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
         initBranchComboBox()
         initReposTable()
         super.init()
+    }
+
+    override fun show() {
+        projectListTableModel.update();
+
+        super.show()
     }
 
     private fun initBranchComboBox() {
@@ -75,8 +78,7 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
     }
 
     private fun initReposTable() {
-        val tableModel = projectListTableModel
-        reposTable.model = tableModel
+        reposTable.model = projectListTableModel
         reposTable.rowHeight = JBUI.scale(22)
 
         val columnModel = reposTable.columnModel
@@ -123,7 +125,7 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
         }
     }
 
-    class ProjectListTableModel(private val reposMap: Map<String, GitRepository>) : DefaultTableModel() {
+    class ProjectListTableModel(private val project: Project) : DefaultTableModel() {
 
         companion object {
             private val COLUMN_CLASS = arrayOf(java.lang.Boolean::class.java, String::class.java, String::class.java)
@@ -132,10 +134,6 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
 
         init {
             COLUMN_NAME.forEach { addColumn(it) }
-
-            reposMap.keys
-                    .sorted()
-                    .forEach { addRow(arrayOf(false, it, reposMap[it]?.currentBranchName)) }
         }
 
         override fun isCellEditable(row: Int, column: Int): Boolean = column == 0
@@ -144,7 +142,16 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
 
         override fun getColumnCount(): Int = 3
 
+        fun update() {
+            dataVector.clear()
+            val reposMap = getReposMap()
+            reposMap.keys
+                    .sorted()
+                    .forEach { addRow(arrayOf(false, it, reposMap[it]?.currentBranchName)) }
+        }
+
         fun getSelectedRepos(): MutableList<GitRepository> {
+            val reposMap = getReposMap()
             val selectRepos = mutableListOf<GitRepository>()
 
             for (r in 0 until rowCount) {
@@ -156,6 +163,10 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
             }
 
             return selectRepos
+        }
+
+        private fun getReposMap() : Map<String, GitRepository> {
+            return ProjectUtil.listRepositories(project).map { it.root.name to it }.toMap()
         }
 
     }

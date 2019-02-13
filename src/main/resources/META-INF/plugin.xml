@@ -16,15 +16,12 @@
         Plugin available at VCS -> Branch Manager
     ]]></description>
 
-    <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
-         on how to target different products -->
-     <!--enable plugin in all products(such as IntelliJ IDEA, RubyMine, WebStorm)-->
-    <depends>com.intellij.modules.lang</depends>
-    <depends>Git4Idea</depends>
-
     <change-notes><![CDATA[
         It's the first plugin version. No change notes since last release.
     ]]></change-notes>
+
+    <depends>com.intellij.modules.lang</depends>
+    <depends>Git4Idea</depends>
 
     <extensions defaultExtensionNs="com.intellij">
     </extensions>

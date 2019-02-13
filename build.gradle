@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'branch-manager'
-version '0.1-SNAPSHOT'
+version '1.0.0'
 
 repositories {
     mavenCentral()
@@ -28,4 +28,9 @@ patchPluginXml {
     changeNotes """
       Add change notes here.<br>
       <em>most HTML tags may be used</em>"""
+}
+
+publishPlugin {
+    username intellijPublishUsername
+    password intellijPublishPassword
 }

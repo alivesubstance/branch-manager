@@ -22,9 +22,9 @@
     <depends>com.intellij.modules.lang</depends>
     <depends>Git4Idea</depends>
 
-    <extensions defaultExtensionNs="com.intellij">
-        <!-- Add your extensions here -->
-    </extensions>
+    <change-notes><![CDATA[
+        It's the first plugin version. No change notes since last release.
+    ]]></change-notes>
 
     <actions>
         <group id="app.BranchManagerGroup"

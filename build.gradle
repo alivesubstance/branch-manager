@@ -24,11 +24,6 @@ intellij {
     version '2018.3'
     plugins 'git4idea'
 }
-patchPluginXml {
-    changeNotes """
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>"""
-}
 
 publishPlugin {
     username intellijPublishUsername

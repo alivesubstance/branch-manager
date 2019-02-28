@@ -1,24 +1,22 @@
 <idea-plugin>
     <id>branchmanager</id>
     <name>Git Branch Manager</name>
-    <vendor email="mirian.dzhachvadze@gmail.com">Mirian Dzhachvadze</vendor>
+    <vendor email="alivesubstance@gmail.com">Mirian Dzhachvadze</vendor>
     <version>1.0.0</version>
     <description><![CDATA[
-        Plugin provide actions like checking out same branch in multiple Git repositories
-        and remove unneeded local branches. It's very useful in projects with several maven
-        or gradle modules loaded in the IDE.<br>
-        Plugin has a GUI interface that allow to select repositories and branch to be created.<br>
-        Also it's possible to switch repositories to already existed branch. Plugin find common branches
-        in selected repositories and suggest to choose one to be checked out.<br>
-        Another feature is to remove unneeded branches. For this case plugin also provide GUI with
-        list of loaded repositories. It shows branches that do not have tracking remotes and
-        allow to delete them.<br>
-        Plugin available at VCS -> Branch Manager
+        Plugin enhance IDE works with GIT branches in multi module project. It provides
+        GIT branch batch operations on loaded into project repo. Also plugin provide GUI
+        interface available at VCS -> Branch Manager.<br>
+
+        Features:<br>
+            * Check out same branch in multiple Git repositories<br>
+            * Switch repositories to already existed branch. Plugin find common branches
+                in selected repositories and suggest to choose one to be checked out.<br>
+            * Remove unneeded local branches. Plugin shows branches that do not have tracking
+                remotes and allow to delete them
     ]]></description>
 
-    <change-notes><![CDATA[
-        It's the first plugin version. No change notes since last release.
-    ]]></change-notes>
+    <change-notes>Initial release of the plugin. No change notes since last release.</change-notes>
 
     <depends>com.intellij.modules.lang</depends>
     <depends>Git4Idea</depends>

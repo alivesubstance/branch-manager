@@ -12,14 +12,11 @@ import git4idea.GitRemoteBranch
 import git4idea.GitUsagesTriggerCollector.Companion.reportUsage
 import git4idea.branch.GitBrancher
 import git4idea.repo.GitRepository
-import java.awt.Component
-import java.awt.Font
 import java.util.stream.IntStream
 import javax.swing.JComboBox
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTable
-import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.table.DefaultTableModel
 import kotlin.streams.asSequence
 
@@ -36,7 +33,6 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
     private lateinit var projectsComboBox: JComboBox<GitRepoInfo>
 
     private val branchesTableModel = BranchesTableModel()
-    private val tableCellRenderer = MyDefaultTableCellRenderer()
 
     init {
         title = "Purge local branches"
@@ -68,7 +64,6 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
 
     private fun updateBranches(gitRepoInfo: GitRepoInfo) {
         branchesTableModel.updateBranches(gitRepoInfo)
-        tableCellRenderer.currentRepo = gitRepoInfo
     }
 
     private fun initBranchesTable() {
@@ -82,8 +77,6 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
 
         val branchColumn = columnModel.getColumn(1)
         branchColumn.headerValue = "Branch"
-
-        branchesTable.setDefaultRenderer(String::class.java, tableCellRenderer)
     }
 
     override fun createCenterPanel(): JComponent? {
@@ -109,20 +102,6 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
         branchesTableModel.getSelectedBranches().forEach {
             gitBrancher.deleteBranch(it, mutableListOf(gitRepoInfo.gitRepo))
             reportUsage(project, "git.branch.delete.local")
-        }
-    }
-
-    class MyDefaultTableCellRenderer: DefaultTableCellRenderer() {
-        lateinit var currentRepo: GitRepoInfo
-
-        override fun getTableCellRendererComponent(
-                table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int
-        ): Component {
-            val component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column)
-            if (column == 1 && currentRepo.gitRepo.currentBranch?.name == value) {
-                component.font = component.font.deriveFont(Font.BOLD)
-            }
-            return component
         }
     }
 

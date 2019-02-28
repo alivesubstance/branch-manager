@@ -83,15 +83,13 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
 
         val columnModel = reposTable.columnModel
         val selectColumn = columnModel.getColumn(0)
-        selectColumn.headerValue = "Select"
         selectColumn.maxWidth = 50
+        selectColumn.headerRenderer = CheckableHeaderRenderer(reposTable.tableHeader)
 
         val repoColumn = columnModel.getColumn(1)
-        repoColumn.headerValue = "Repository"
         repoColumn.maxWidth = 250
 
         val branchColumn = columnModel.getColumn(2)
-        branchColumn.headerValue = "Branch"
         branchColumn.maxWidth = 350
     }
 
@@ -129,7 +127,7 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
 
         companion object {
             private val COLUMN_CLASS = arrayOf(java.lang.Boolean::class.java, String::class.java, String::class.java)
-            private val COLUMN_NAME = arrayOf("Select", "Repository", "Branch")
+            private val COLUMN_NAME = arrayOf("", "Repository", "Branch")
         }
 
         init {

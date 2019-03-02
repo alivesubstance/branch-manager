@@ -1,11 +1,14 @@
 package app.gui;
 
 import app.ProjectUtil
+import com.intellij.dvcs.repo.VcsRepositoryManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.MessageDialogBuilder
 import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.vcs.changes.ChangeListManager
+import com.intellij.openapi.vcs.changes.LocalChangeList
 import com.intellij.ui.PopupMenuListenerAdapter
 import com.intellij.util.ui.JBUI
 import git4idea.GitLocalBranch
@@ -61,7 +64,8 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
     }
 
     private fun findCommonBranchesInRepos(): Set<GitLocalBranch> {
-        val selectedRepos: Map<GitRepository, MutableCollection<GitLocalBranch>> = projectListTableModel.getSelectedRepos()
+        val selectedRepos: Map<GitRepository, MutableCollection<GitLocalBranch>> = projectListTableModel
+                .getSelectedRepos()
                 .map { it to it.branches.localBranches }
                 .toMap()
 
@@ -145,9 +149,26 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
         fun update() {
             dataVector.clear()
             val reposMap = getReposMap()
+            val vcsRepositoryManager = VcsRepositoryManager.getInstance(project)
+            val changeListManager = ChangeListManager.getInstance(project)
             reposMap.keys
                     .sorted()
-                    .forEach { addRow(arrayOf(false, it, reposMap[it]?.currentBranchName)) }
+                    .forEach {
+                        val hasChanges = hasChanges(reposMap.getValue(it), vcsRepositoryManager, changeListManager)
+                        addRow(arrayOf(hasChanges, it, reposMap[it]?.currentBranchName))
+                    }
+        }
+
+        private fun hasChanges(
+                repo: GitRepository,
+                vcsRepositoryManager: VcsRepositoryManager,
+                changeListManager: ChangeListManager
+        ): Boolean {
+            val curChangeList: LocalChangeList = changeListManager.changeLists.first { it.isDefault }
+
+            return curChangeList.changes
+                    .map { vcsRepositoryManager.getRepositoryForFile(it.virtualFile!!, true) }
+                    .any { it == repo }
         }
 
         fun getSelectedRepos(): MutableList<GitRepository> {

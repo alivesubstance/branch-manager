@@ -1,4 +1,4 @@
-### GIT Branch manager JetBrains IDE Plugin
+### GIT Branch Manager JetBrains IDE Plugin
 
 
 Plugin enhance IDE works with GIT branches in multi module project. It provides

@@ -12,14 +12,11 @@ import git4idea.GitRemoteBranch
 import git4idea.GitUsagesTriggerCollector.Companion.reportUsage
 import git4idea.branch.GitBrancher
 import git4idea.repo.GitRepository
-import java.awt.Component
-import java.awt.Font
 import java.util.stream.IntStream
 import javax.swing.JComboBox
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTable
-import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.table.DefaultTableModel
 import kotlin.streams.asSequence
 
@@ -35,8 +32,7 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
     private lateinit var branchesTable: JTable
     private lateinit var projectsComboBox: JComboBox<GitRepoInfo>
 
-    private val branchesTableModel = BranchesTableModel()
-    private val tableCellRenderer = MyDefaultTableCellRenderer()
+    private val branchesTableModel = SingleRepoBranchesTableModel()
 
     init {
         title = "Purge local branches"
@@ -68,7 +64,6 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
 
     private fun updateBranches(gitRepoInfo: GitRepoInfo) {
         branchesTableModel.updateBranches(gitRepoInfo)
-        tableCellRenderer.currentRepo = gitRepoInfo
     }
 
     private fun initBranchesTable() {
@@ -82,8 +77,6 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
 
         val branchColumn = columnModel.getColumn(1)
         branchColumn.headerValue = "Branch"
-
-        branchesTable.setDefaultRenderer(String::class.java, tableCellRenderer)
     }
 
     override fun createCenterPanel(): JComponent? {
@@ -112,37 +105,34 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
         }
     }
 
-    class MyDefaultTableCellRenderer: DefaultTableCellRenderer() {
-        lateinit var currentRepo: GitRepoInfo
-
-        override fun getTableCellRendererComponent(
-                table: JTable?, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int
-        ): Component {
-            val component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column)
-            if (column == 1 && currentRepo.gitRepo.currentBranch?.name == value) {
-                component.font = component.font.deriveFont(Font.BOLD)
-            }
-            return component
-        }
-    }
-
-    class BranchesTableModel : DefaultTableModel() {
-
-        companion object {
-            // like private static final in java
-            private val COLUMN_CLASS = arrayOf(java.lang.Boolean::class.java, String::class.java)
-            private val COLUMN_NAME = arrayOf("Select", "Branch")
-        }
+    open class BranchesTableModel(
+            private val columnClass: Array<Class<out Any>>,
+            private val columnName: Array<String>
+    ): DefaultTableModel() {
 
         init {
-            COLUMN_NAME.forEach { addColumn(it) }
+            columnName.forEach { addColumn(it) }
         }
 
         override fun isCellEditable(row: Int, column: Int): Boolean = column == 0
 
-        override fun getColumnClass(columnIndex: Int): Class<*> = COLUMN_CLASS[columnIndex]
+        override fun getColumnClass(columnIndex: Int): Class<*> = columnClass[columnIndex]
 
-        override fun getColumnCount(): Int = 2
+        override fun getColumnCount(): Int = columnName.size
+
+    }
+
+    class MultipleRepoBranchesTableModel : BranchesTableModel(
+            arrayOf(java.lang.Boolean::class.java, String::class.java, String::class.java),
+            arrayOf("Select", "Repository", "Branch")
+    ) {
+
+    }
+
+    class SingleRepoBranchesTableModel : BranchesTableModel(
+            arrayOf(java.lang.Boolean::class.java, String::class.java),
+            arrayOf("Select", "Branch")
+    ) {
 
         fun updateBranches(gitRepoInfo: GitRepoInfo) {
             dataVector.clear()
@@ -150,15 +140,16 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
             gitRepoInfo.localBranches
                     .sortedBy { localBranch -> localBranch.name }
                     .filter {
+                        // ignore remove branches
                         !gitRepoInfo.remoteBranches.any { remoteBranch ->
                             remoteBranch.nameForRemoteOperations == it.name
                         }
                     }
                     .filter {
+                        // ignore current branch
                         !gitRepoInfo.gitRepo.currentBranch?.equals(it)!!
                     }
-                    .forEach { addRow(arrayOf(true, it.name))
-                    }
+                    .forEach { addRow(arrayOf(true, it.name)) }
         }
 
         fun getSelectedBranches(): Sequence<String> {

@@ -14,7 +14,7 @@
         </constraints>
         <properties>
           <horizontalAlignment value="11"/>
-          <text value="Projects"/>
+          <text value="Repos"/>
           <verticalAlignment value="1"/>
         </properties>
       </component>

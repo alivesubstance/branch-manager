@@ -12,17 +12,15 @@ import git4idea.GitRemoteBranch
 import git4idea.GitUsagesTriggerCollector.Companion.reportUsage
 import git4idea.branch.GitBrancher
 import git4idea.repo.GitRepository
-import java.util.stream.IntStream
 import javax.swing.JComboBox
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTable
-import javax.swing.table.DefaultTableModel
-import kotlin.streams.asSequence
 
 class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(project) {
 
     companion object {
+        private const val ALL_REPO = "All Projects"
         private val log = Logger.getInstance(PurgeLocalBranchesDialog::class.java)
     }
 
@@ -40,7 +38,7 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
 
         repositories = ProjectUtil.listRepositories(project)
                 .map { GitRepoInfo(it) }
-                .sortedBy { it.gitRepo.root.name }
+                .sortedBy { it.repoName }
         init()
     }
 
@@ -51,9 +49,10 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
     }
 
     private fun initProjectComboBox() {
+        projectsComboBox.addItem(GitRepoInfo(ALL_REPO))
         repositories.forEach { projectsComboBox.addItem(it) }
 
-        updateBranches(repositories[0])
+//        updateBranches(repositories[0])
 
         projectsComboBox.addActionListener { event ->
             val selectedProject = (event.source as JComboBox<*>).selectedItem
@@ -105,71 +104,47 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
         }
     }
 
-    open class BranchesTableModel(
-            private val columnClass: Array<Class<out Any>>,
-            private val columnName: Array<String>
-    ): DefaultTableModel() {
-
-        init {
-            columnName.forEach { addColumn(it) }
-        }
-
-        override fun isCellEditable(row: Int, column: Int): Boolean = column == 0
-
-        override fun getColumnClass(columnIndex: Int): Class<*> = columnClass[columnIndex]
-
-        override fun getColumnCount(): Int = columnName.size
-
-    }
-
     class MultipleRepoBranchesTableModel : BranchesTableModel(
             arrayOf(java.lang.Boolean::class.java, String::class.java, String::class.java),
             arrayOf("Select", "Repository", "Branch")
     ) {
-
-    }
-
-    class SingleRepoBranchesTableModel : BranchesTableModel(
-            arrayOf(java.lang.Boolean::class.java, String::class.java),
-            arrayOf("Select", "Branch")
-    ) {
-
-        fun updateBranches(gitRepoInfo: GitRepoInfo) {
-            dataVector.clear()
-
-            gitRepoInfo.localBranches
-                    .sortedBy { localBranch -> localBranch.name }
-                    .filter {
-                        // ignore remove branches
-                        !gitRepoInfo.remoteBranches.any { remoteBranch ->
-                            remoteBranch.nameForRemoteOperations == it.name
-                        }
-                    }
-                    .filter {
-                        // ignore current branch
-                        !gitRepoInfo.gitRepo.currentBranch?.equals(it)!!
-                    }
-                    .forEach { addRow(arrayOf(true, it.name)) }
-        }
-
-        fun getSelectedBranches(): Sequence<String> {
-            return IntStream.range(0, rowCount)
-                    .asSequence()
-                    .filter { getValueAt(it, 0) as Boolean }
-                    .map { getValueAt(it, 1) as String }
+        init {
+            addRow(arrayOf(true, "repo1", "branch1"))
+            addRow(arrayOf(true, "repo1", "branch2"))
+            addRow(arrayOf(true, "repo2", "branch1"))
         }
     }
 
-    data class GitRepoInfo(val gitRepo: GitRepository) {
+    class GitRepoInfo {
+
+        private var myRepoName: String? = null
+
+        // internal, it is visible everywhere in the same module
+        // see https://kotlinlang.org/docs/reference/visibility-modifiers.html#modules
+        internal var gitRepo: GitRepository? = null
+
+        constructor(repoName: String) {
+            myRepoName = repoName
+        }
+
+        constructor(repo: GitRepository) {
+            gitRepo = repo
+        }
 
         val localBranches: List<GitLocalBranch>
-            get() = gitRepo.branches.localBranches.toList()
+            get() = gitRepo!!.branches.localBranches.toList()
 
         val remoteBranches: List<GitRemoteBranch>
-            get() = gitRepo.branches.remoteBranches.toList()
+            get() = gitRepo!!.branches.remoteBranches.toList()
+
+        val currentBranch: GitLocalBranch
+            get() = gitRepo!!.currentBranch!!
+
+        val repoName: String
+            get() = gitRepo!!.root.name
 
         override fun toString(): String {
-            return gitRepo.root.name
+            return if (gitRepo != null) { gitRepo!!.root.name } else myRepoName!!
         }
 
     }

@@ -167,6 +167,7 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
             val curChangeList: LocalChangeList = changeListManager.changeLists.first { it.isDefault }
 
             return curChangeList.changes
+                    .filter { it.virtualFile != null }
                     .map { vcsRepositoryManager.getRepositoryForFile(it.virtualFile!!, true) }
                     .any { it == repo }
         }

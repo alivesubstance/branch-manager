@@ -24,8 +24,3 @@ intellij {
     version '2018.3'
     plugins 'git4idea'
 }
-
-publishPlugin {
-    username intellijPublishUsername
-    password intellijPublishPassword
-}

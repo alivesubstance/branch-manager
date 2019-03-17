@@ -1,4 +1,4 @@
-package app.gui
+package app.gui.purge
 
 import javax.swing.table.DefaultTableModel
 

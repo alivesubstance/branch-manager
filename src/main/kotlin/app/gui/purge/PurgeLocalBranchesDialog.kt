@@ -10,7 +10,6 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.MessageDialogBuilder
 import com.intellij.openapi.ui.Messages
 import com.intellij.util.ui.JBUI
-import git4idea.GitUsagesTriggerCollector.Companion.reportUsage
 import git4idea.branch.GitBrancher
 import javax.swing.JComboBox
 import javax.swing.JComponent
@@ -135,7 +134,6 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
     private fun deleteBranch(gitBrancher: GitBrancher, gitRepoInfo: GitRepoInfo, vararg branches: String) {
         branches.forEach {
             gitBrancher.deleteBranch(it, mutableListOf(gitRepoInfo.gitRepo))
-            reportUsage(project, "git.branch.delete.local")
         }
     }
 

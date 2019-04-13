@@ -2,7 +2,7 @@
     <id>branchmanager</id>
     <name>Git Branch Manager</name>
     <vendor email="alivesubstance@gmail.com">Mirian Dzhachvadze</vendor>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <description><![CDATA[
         Plugin enhance IDE works with GIT branches in multi module project. It provides
         GIT branch batch operations on loaded into project repo. Also plugin provide GUI
@@ -16,7 +16,7 @@
                 remotes and allow to delete them
     ]]></description>
 
-    <change-notes>Extend purge unneeded local branches dialog to show branches for all GIT repositories</change-notes>
+    <change-notes>Fixes to make plugin compatible with IntelliJ 2019</change-notes>
 
     <depends>com.intellij.modules.lang</depends>
     <depends>Git4Idea</depends>

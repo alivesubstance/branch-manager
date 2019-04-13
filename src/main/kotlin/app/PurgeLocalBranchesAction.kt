@@ -1,6 +1,6 @@
 package app
 
-import app.gui.PurgeLocalBranchesDialog
+import app.gui.purge.PurgeLocalBranchesDialog
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 

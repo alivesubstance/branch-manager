@@ -1,9 +1,6 @@
-package app.gui
+package app.gui.purge
 
 import app.ProjectUtil
-import app.gui.purge.GitRepoInfo
-import app.gui.purge.MultiReposBranchesTableModel
-import app.gui.purge.SingleRepoBranchesTableModel
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper

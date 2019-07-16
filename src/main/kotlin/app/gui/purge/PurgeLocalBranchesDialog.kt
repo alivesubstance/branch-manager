@@ -79,6 +79,10 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
         repoColumn.headerValue = "Repository"
         repoColumn.maxWidth = 250
 
+        val branchColumn = columnModel.getColumn(2)
+        branchColumn.headerValue = "Branch"
+        branchColumn.maxWidth = 350
+
         multiReposBranchesTableModel.showBranches(project)
     }
 

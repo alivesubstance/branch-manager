@@ -1,14 +1,13 @@
 package app
 
-import app.gui.CheckoutBranchDialog2
+import app.gui.CheckoutBranchDialog
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 
-class CreateBranchAction: AnAction() {
+class OpenCheckoutBranchDialogAction : AnAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
-        CheckoutBranchDialog2(e.project!!).showAndGet()
-
+        CheckoutBranchDialog(e.project!!).showAndGet()
     }
 
 }

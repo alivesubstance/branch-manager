@@ -14,12 +14,16 @@ import com.intellij.util.ui.JBUI
 import git4idea.GitLocalBranch
 import git4idea.branch.GitBrancher
 import git4idea.repo.GitRepository
+import java.awt.Component
+import java.awt.event.KeyAdapter
+import java.awt.event.KeyEvent
 import javax.swing.JComboBox
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.JTable
 import javax.swing.event.PopupMenuEvent
 import javax.swing.table.DefaultTableModel
+import javax.swing.text.JTextComponent
 
 class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project) {
 
@@ -43,6 +47,7 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
     override fun init() {
         initBranchComboBox()
         initReposTable()
+        isOKActionEnabled = false
         super.init()
     }
 
@@ -53,6 +58,20 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
     }
 
     private fun initBranchComboBox() {
+        branchComboBox.toolTipText = "choose branch"
+        branchComboBox.editor.editorComponent.addKeyListener(object: KeyAdapter() {
+            override fun keyReleased(e: KeyEvent) {
+                val component = e.source as Component
+                val jComboBox = component.parent as JComboBox<*>
+                val textComponent = jComboBox.editor.editorComponent as JTextComponent
+                isOKActionEnabled = !textComponent.text.isEmpty()
+            }
+        })
+
+        branchComboBox.addItemListener { e ->
+            isOKActionEnabled = e.item != null
+        }
+
         branchComboBox.addPopupMenuListener(object: PopupMenuListenerAdapter() {
             override fun popupMenuWillBecomeVisible(e: PopupMenuEvent?) {
                 branchComboBox.removeAllItems()

@@ -2,7 +2,7 @@
     <id>branchmanager</id>
     <name>Git Branch Manager</name>
     <vendor email="alivesubstance@gmail.com">Mirian Dzhachvadze</vendor>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <description><![CDATA[
         Plugin enhance IDE works with GIT branches in multi module project. It provides
         GIT branch batch operations on loaded into project repo. Also plugin provide GUI
@@ -16,7 +16,7 @@
                 remotes and allow to delete them
     ]]></description>
 
-    <change-notes>Fixes to make plugin compatible with IntelliJ 2019</change-notes>
+    <change-notes>Fix NPE when checkout branch with empty branch checkbox item</change-notes>
 
     <depends>com.intellij.modules.lang</depends>
     <depends>Git4Idea</depends>
@@ -27,16 +27,16 @@
     <actions>
         <group id="app.BranchManagerGroup"
                class="app.BranchManagerGroup"
-               text="Branch manager" popup="true">
+               text="Branch Manager" popup="true">
             <add-to-group group-id="VcsGroups" anchor="last"/>
             <action id="app.CreateBranchAction"
                     class="app.CreateBranchAction"
-                    text="Checkout branch"
+                    text="Checkout Branch"
                     description="Create same branch in selected repositories"
             />
             <action id="app.PurgeLocalBranchesAction"
                     class="app.PurgeLocalBranchesAction"
-                    text="Purge local branches"
+                    text="Purge Local Branches"
                     description="Delete local branches missing in remote"
             />
         </group>

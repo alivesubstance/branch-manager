@@ -2,7 +2,7 @@
     <id>branchmanager</id>
     <name>Git Branch Manager</name>
     <vendor email="alivesubstance@gmail.com">Mirian Dzhachvadze</vendor>
-    <version>1.0.4</version>
+    <version>1.0.5</version>
     <description><![CDATA[
         Plugin enhance IDE works with GIT branches in multi module project. It provides
         GIT branch batch operations on loaded into project repo. Also plugin provide GUI

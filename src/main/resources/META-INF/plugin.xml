@@ -2,7 +2,7 @@
     <id>branchmanager</id>
     <name>Git Branch Manager</name>
     <vendor email="alivesubstance@gmail.com">Mirian Dzhachvadze</vendor>
-    <version>1.0.5</version>
+    <version>1.0.6</version>
     <description><![CDATA[
         Plugin enhance IDE works with GIT branches in multi module project. It provides
         GIT branch batch operations on loaded into project repo. Also plugin provide GUI
@@ -16,7 +16,7 @@
                 remotes and allow to delete them
     ]]></description>
 
-    <change-notes>Fix NPE when checkout branch with empty branch checkbox item</change-notes>
+    <change-notes>Add table sorting in Purge Local Branches dialog</change-notes>
 
     <depends>com.intellij.modules.lang</depends>
     <depends>Git4Idea</depends>

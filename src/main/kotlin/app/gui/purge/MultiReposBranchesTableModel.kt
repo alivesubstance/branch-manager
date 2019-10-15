@@ -12,7 +12,7 @@ class MultiReposBranchesTableModel : BranchesTableModel(
         arrayOf("Select", "Repository", "Branch")
 ) {
     fun showBranches(project: Project) {
-        dataVector.clear()
+        rowCount = 0
 
         ProjectUtil.listRepositories(project)
                 .map { GitRepoInfo(it) }

@@ -8,7 +8,7 @@ class SingleRepoBranchesTableModel : BranchesTableModel(
         arrayOf("Select", "Branch")
 ) {
     fun showBranches(gitRepoInfo: GitRepoInfo) {
-        dataVector.clear()
+        rowCount = 0
 
         gitRepoInfo.localBranchesIgnoreCurrent.forEach { addRow(arrayOf(true, it.name)) }
     }

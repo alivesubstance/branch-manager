@@ -102,6 +102,7 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
 
     private fun initReposTable() {
         reposTable.model = projectListTableModel
+        reposTable.autoCreateRowSorter = true
         reposTable.rowHeight = JBUI.scale(22)
 
         val columnModel = reposTable.columnModel

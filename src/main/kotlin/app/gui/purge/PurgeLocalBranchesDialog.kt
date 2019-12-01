@@ -65,14 +65,8 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
     }
 
     private fun showMultiRepoBranchesTable() {
-        val multiReposModelSorter = TableRowSorter(multiReposModel)
-        multiReposModelSorter.sortKeys = listOf(
-                RowSorter.SortKey(1, SortOrder.ASCENDING),
-                RowSorter.SortKey(2, SortOrder.ASCENDING)
-        )
-
         branchesTable.model = multiReposModel
-        branchesTable.rowSorter = multiReposModelSorter
+        branchesTable.autoCreateRowSorter = true
         branchesTable.rowHeight = JBUI.scale(22)
 
         val columnModel = branchesTable.columnModel

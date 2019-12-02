@@ -16,7 +16,7 @@
                 remotes and allow to delete them
     ]]></description>
 
-    <change-notes>Add table sorting in Purge Local Branches dialog</change-notes>
+    <change-notes>Make compatible with IntelliJ IDEA 2019.3</change-notes>
 
     <depends>com.intellij.modules.lang</depends>
     <depends>Git4Idea</depends>

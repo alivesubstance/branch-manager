@@ -1,21 +1,38 @@
 package app.gui
 
 import java.awt.Component
-import java.awt.event.ItemListener
+import java.awt.event.ItemEvent
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
-import javax.swing.JCheckBox
-import javax.swing.JTable
-import javax.swing.SwingConstants
-import javax.swing.UIManager
+import javax.swing.*
 import javax.swing.table.JTableHeader
 import javax.swing.table.TableCellRenderer
 
-internal class CheckBoxHeader(itemListener: ItemListener?) : JCheckBox(), TableCellRenderer, MouseListener {
+internal class CheckBoxHeader(table: JTable) : JCheckBox(), TableCellRenderer, MouseListener {
 
     var rendererComponent: CheckBoxHeader = this
     var column = 0
     var mousePressed = false
+
+    init {
+        rendererComponent = this
+        rendererComponent.horizontalAlignment = SwingConstants.CENTER
+        rendererComponent.addItemListener {
+            fun itemStateChanged(e: ItemEvent) {
+                val source = e.source
+                if (source !is AbstractButton) return
+
+                val checked = e.stateChange == ItemEvent.SELECTED
+                var x = 0
+                val y: Int = table.rowCount
+                while (x < y) {
+                    table.setValueAt(checked, x, 0)
+                    x++
+                }
+            }
+        }
+    }
+
     override fun getTableCellRendererComponent(
             table: JTable, value: Any,
             isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int): Component {
@@ -60,8 +77,4 @@ internal class CheckBoxHeader(itemListener: ItemListener?) : JCheckBox(), TableC
     override fun mouseEntered(e: MouseEvent) {}
     override fun mouseExited(e: MouseEvent) {}
 
-    init {
-        rendererComponent.addItemListener(itemListener)
-        rendererComponent.horizontalAlignment = SwingConstants.CENTER
-    }
 }

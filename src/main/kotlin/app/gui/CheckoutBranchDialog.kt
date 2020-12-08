@@ -128,9 +128,9 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
         val checkoutBranchRes = MessageDialogBuilder.yesNo(
                 "Checkout branch",
                 "Checkout branch '$branchToCheckout'?"
-        ).noText("Cancel").show()
+        ).noText("Cancel").ask(project)
 
-        if (checkoutBranchRes == Messages.YES) {
+        if (checkoutBranchRes) {
             checkoutBranch(branchToCheckout)
             // close parent dialog
             super.doOKAction()

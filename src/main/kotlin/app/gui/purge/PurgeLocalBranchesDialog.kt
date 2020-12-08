@@ -112,9 +112,9 @@ class PurgeLocalBranchesDialog(private val project: Project) : DialogWrapper(pro
         val deleteLocalBranchesRes = MessageDialogBuilder.yesNo(
                 "Delete local branches",
                 "Are you sure to delete local branches?"
-        ).noText("Cancel").show()
+        ).noText("Cancel").ask(project)
 
-        if (deleteLocalBranchesRes == Messages.YES) {
+        if (deleteLocalBranchesRes) {
             deleteLocalBranches(projectsComboBox.selectedItem as GitRepoInfo)
             // close parent dialog
             super.doOKAction()

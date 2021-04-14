@@ -1,10 +1,10 @@
 plugins {
-    id 'org.jetbrains.intellij' version '0.6.5'
-    id 'org.jetbrains.kotlin.jvm' version '1.4.21'
+    id 'org.jetbrains.intellij' version '0.7.2'
+    id 'org.jetbrains.kotlin.jvm' version '1.4.32'
 }
 
 group 'branch-manager'
-version '1.1.1'
+version '1.1.2'
 
 repositories {
     mavenCentral()
@@ -21,6 +21,6 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 intellij {
-    version '2020.3'
+    version '2021.1'
     plugins 'git4idea'
 }

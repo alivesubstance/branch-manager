@@ -2,7 +2,7 @@
     <id>branchmanager</id>
     <name>Git Branch Manager</name>
     <vendor email="alivesubstance@gmail.com">Mirian Dzhachvadze</vendor>
-    <version>1.1.2</version>
+    <version>1.1.3</version>
     <description><![CDATA[
         Plugin enhance IDE works with GIT branches in multi module project. It provides
         GIT branch batch operations on loaded into project repo. Also plugin provide GUI
@@ -16,7 +16,7 @@
                 remotes and allow to delete them
     ]]></description>
 
-    <change-notes>Make compatible with IntelliJ IDEA 2020.3</change-notes>
+    <change-notes>Make compatible with IntelliJ IDEA 2021.2</change-notes>
 
     <depends>com.intellij.modules.lang</depends>
     <depends>Git4Idea</depends>

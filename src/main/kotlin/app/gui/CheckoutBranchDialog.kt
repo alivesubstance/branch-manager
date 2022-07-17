@@ -39,7 +39,7 @@ class CheckoutBranchDialog(private val project: Project) : DialogWrapper(project
 
     init {
         log.info("Project list dialog initialized for project $project")
-        title = "Create branch"
+        title = "Create Branch"
 
         init()
     }
